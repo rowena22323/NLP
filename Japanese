@@ -1,0 +1,42 @@
+import codecs
+import MeCab
+import pandas as pd
+ def corpus_j (x,y):
+     sf = codecs.open(x,'r', encoding = 'shift-jis')
+     uf = codecs.open(y,'w', encoding = 'utf-8')
+     for line in sf:
+         uf.write(line)
+
+     sf.close()
+     uf.close()
+
+ corpus_j ('./omoide.txt','./dazai2.txt')
+ corpus_j('./ningen_shikkaku.txt','./dazai5.txt')
+ corpus_j('./gyakko_shinshin.txt','./dazai3.txt')
+ corpus_j('./dokeno_hana.txt','./dazai1.txt')
+
+neologd_tagger = MeCab.Tagger('-ochasen')
+print(neologd_tagger.parse('庭には二羽鶏がいる')) # mecab test
+
+ def parse_text(text: str):
+     parsed_text = neologd_tagger.parse(text).split('\n')
+     parsed_results = pd.Series(parsed_text).str.split('\t').tolist()
+     df = pd.DataFrame.from_records(parsed_results)
+     columns = ['katsuyoukei', 'katsuyoukata','spell', 'orig', 'type', ]
+     df.columns = columns
+     return df.query("surface != 'EOS'").query("surface != ''")
+
+ parse_text('庭には二羽鶏がいる')
+
+"""
+C:\pypy\venv\Scripts\python.exe C:/pypy/web.py
+庭	名詞,一般,*,*,*,*,庭,ニワ,ニワ
+に	助詞,格助詞,一般,*,*,*,に,ニ,ニ
+は	助詞,係助詞,*,*,*,*,は,ハ,ワ
+二	名詞,数,*,*,*,*,二,ニ,ニ
+羽	名詞,接尾,助数詞,*,*,*,羽,ワ,ワ
+鶏	名詞,一般,*,*,*,*,鶏,ニワトリ,ニワトリ
+が	助詞,格助詞,一般,*,*,*,が,ガ,ガ
+いる	動詞,自立,*,*,一段,基本形,いる,イル,イル
+EOS
+"""
